@@ -1,5 +1,5 @@
 # upload-ajax
-Upload com Ajax e back-end em Node.js
+Upload com AJAX utilizando jQuery e back-end em Node.js
 
 ```bash
 git clone https://github.com/samuelnovaes/upload-ajax.git
