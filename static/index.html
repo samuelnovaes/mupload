@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Upload com AJAX</title>
+	<style>
+		#progresso {
+			width: 100%;
+		}
+	</style>
+</head>
+<body>
+	<form id="formulario">
+		Arquivo: <br />
+		<input type="file" name="arquivo">
+		<br>
+		<br>
+		<input type="submit" value="Enviar">
+		<br>
+		<br>
+		<meter value="0" min="0" max="100" id="progresso"></meter>
+	</form>
+	<script src="js/jquery-3.2.1.min.js"></script>
+	<script>
+	$('#formulario').submit(function(e){
+		let formData = new FormData(this)
+		$.ajax({
+			url: '/upload',
+			type: 'POST',
+			data: formData,
+			success: function (data) {
+				$('#progresso').val(0)
+				alert(data)
+			},
+			cache: false,
+			contentType: false,
+			processData: false,
+			xhr(){
+				let myXhr = $.ajaxSettings.xhr()
+				if (myXhr.upload) {
+					myXhr.upload.addEventListener('progress', e => {
+						if(e.lengthComputable){
+							let max = e.total
+							let current = e.loaded
+							let percentage = (current * 100)/max
+							$('#progresso').val(percentage)
+						}
+					}, false)
+				}
+				return myXhr
+			}
+		})
+		e.preventDefault()
+	})
+	</script>
+</body>
+</html>

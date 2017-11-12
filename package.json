@@ -1,0 +1,15 @@
+{
+	"name": "upload-ajax",
+	"version": "1.0.0",
+	"description": "Upload com AJAX utilizando jQuery e back-end em Node.js",
+	"main": "index.js",
+	"scripts": {
+		"start": "node index.js"
+	},
+	"author": "Samuel Novaes Sena",
+	"license": "ISC",
+	"dependencies": {
+		"connect-multiparty": "^2.1.0",
+		"express": "^4.16.2"
+	}
+}
