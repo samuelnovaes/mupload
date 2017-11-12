@@ -20,5 +20,5 @@ app.post('/upload', (req, res) => {
 })
 
 app.listen(8080, ()=>{
-	console.log('ok')
+	console.log('Abra a URL http://localhost:8000 no seu navegador!')
 })
