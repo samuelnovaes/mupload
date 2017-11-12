@@ -1,7 +1,7 @@
 {
 	"name": "upload-ajax",
 	"version": "1.0.0",
-	"description": "Upload com AJAX utilizando jQuery e back-end em Node.js",
+	"description": "Upload com AJAX utilizando jQuery e back-end em Node.js com barra de progresso",
 	"main": "index.js",
 	"scripts": {
 		"start": "node index.js"
