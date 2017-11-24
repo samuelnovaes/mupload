@@ -7,7 +7,7 @@
 		"start": "node index.js"
 	},
 	"author": "Samuel Novaes Sena",
-	"license": "ISC",
+	"license": "BSD-3-Clause",
 	"dependencies": {
 		"connect-multiparty": "^2.1.0",
 		"express": "^4.16.2"
