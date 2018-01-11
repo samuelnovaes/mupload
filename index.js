@@ -3,6 +3,7 @@ let path = require('path')
 let multipart = require('connect-multiparty')
 let fs = require('fs-extra')
 let app = express()
+let port = 8080
 
 app.use(express.static(path.join(__dirname, 'static')))
 app.use(multipart())
@@ -19,6 +20,6 @@ app.post('/upload', (req, res) => {
 	})
 })
 
-app.listen(80, ()=>{
-	console.log('Abra a URL http://localhost:80 no seu navegador!')
+app.listen(port, ()=>{
+	console.log(`Abra a URL http://localhost:${port} no seu navegador!`)
 })
