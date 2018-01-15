@@ -1,5 +1,5 @@
 # upload-ajax
-Upload com AJAX utilizando jQuery e back-end em Node.js com barra de progresso
+AJAX multiple file upload with progress
 
 ```bash
 git clone https://github.com/samuelnovaes/upload-ajax.git

@@ -2,56 +2,16 @@
 <html>
 <head>
 	<meta charset="utf-8">
-	<title>Upload com AJAX</title>
-	<style>
-		#progresso {
-			width: 100%;
-		}
-	</style>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>File upload</title>
 </head>
 <body>
-	<form id="formulario">
-		Arquivo: <br />
-		<input type="file" name="arquivo">
-		<br>
-		<br>
-		<input type="submit" value="Enviar">
-		<br>
-		<br>
-		<meter value="0" min="0" max="100" id="progresso"></meter>
+	<form enctype="multipart/form-data" id="form">
+		<input type="file" name="files" multiple><button type="submit" id="btn">Upload</button>
 	</form>
-	<script src="js/jquery-3.2.1.min.js"></script>
-	<script>
-	$('#formulario').submit(function(e){
-		let formData = new FormData(this)
-		$.ajax({
-			url: '/upload',
-			type: 'POST',
-			data: formData,
-			success: function (data) {
-				$('#progresso').val(0)
-				alert(data)
-			},
-			cache: false,
-			contentType: false,
-			processData: false,
-			xhr(){
-				let myXhr = $.ajaxSettings.xhr()
-				if (myXhr.upload) {
-					myXhr.upload.addEventListener('progress', e => {
-						if(e.lengthComputable){
-							let max = e.total
-							let current = e.loaded
-							let percentage = (current * 100)/max
-							$('#progresso').val(percentage)
-						}
-					}, false)
-				}
-				return myXhr
-			}
-		})
-		e.preventDefault()
-	})
-	</script>
+	<br>
+	<span id="status"></span>
+	<script src="js/axios.min.js"></script>
+	<script src="js/main.js"></script>
 </body>
 </html>

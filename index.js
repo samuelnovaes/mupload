@@ -1,25 +1,38 @@
 let express = require('express')
+let formidable = require('formidable')
 let path = require('path')
-let multipart = require('connect-multiparty')
 let fs = require('fs-extra')
+let ip = require('ip')
 let app = express()
-let port = 8080
 
 app.use(express.static(path.join(__dirname, 'static')))
-app.use(multipart())
 
-app.post('/upload', (req, res) => {
-	let arquivo = req.files.arquivo
-	fs.copy(arquivo.path, path.join(__dirname, 'uploads', arquivo.originalFilename), err => {
-		if(err) throw err
-		fs.unlink(arquivo.path, err => {
-			if(err) throw err
-			delete req.files.arquivo
-			res.send('Arquivo enviado!')
-		})
+app.post('/', (req, res) => {
+	let form = new formidable.IncomingForm()
+	form.multiples = true
+	form.uploadDir = path.join(__dirname, 'uploads')
+	form.parse(req, async (err, fields, files) => {
+		if(err) res.status(500).send(err.message)
+		let fileList = Array.isArray(files.files) ? files.files : [files.files]
+		for(let i in fileList){
+			let file = fileList[i]
+			if(file.name){
+				try {
+					await fs.rename(file.path, path.join(__dirname, 'uploads', file.name))
+				}
+				catch(err){
+					res.status(500).send(err.message)
+				}
+			}
+			else {
+				fs.remove(file.path)
+				res.status(500).send('No file chosen')
+			}
+		}
+		res.end()
 	})
 })
 
-app.listen(port, ()=>{
-	console.log(`Abra a URL http://localhost:${port} no seu navegador!`)
+app.listen(8080, () => {
+	console.log(`http://${ip.address()}:8080`)
 })

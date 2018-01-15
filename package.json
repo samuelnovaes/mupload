@@ -1,16 +1,26 @@
 {
 	"name": "upload-ajax",
 	"version": "1.0.0",
-	"description": "Upload com AJAX utilizando jQuery e back-end em Node.js com barra de progresso",
+	"description": "AJAX multiple file upload with progress",
 	"main": "index.js",
+	"dependencies": {
+		"express": "^4.16.2",
+		"formidable": "^1.1.1",
+		"fs-extra": "^5.0.0",
+		"ip": "^1.1.5"
+	},
+	"devDependencies": {},
 	"scripts": {
 		"start": "node index.js"
 	},
-	"author": "Samuel Novaes Sena",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/samuelnovaes/upload-ajax.git"
+	},
+	"author": "Samuel Novaes <samuel.novaes.96@gmail.com>",
 	"license": "BSD-3-Clause",
-	"dependencies": {
-		"connect-multiparty": "^2.1.0",
-		"express": "^4.16.2",
-		"fs-extra": "^5.0.0"
-	}
+	"bugs": {
+		"url": "https://github.com/samuelnovaes/upload-ajax/issues"
+	},
+	"homepage": "https://github.com/samuelnovaes/upload-ajax#readme"
 }
