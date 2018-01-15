@@ -7,3 +7,5 @@ cd upload-ajax
 npm install
 npm start
 ```
+
+You can change your password in the `password.txt` file
