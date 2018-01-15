@@ -28,7 +28,7 @@ fs.readFile(path.join(__dirname, 'password.txt'), 'utf-8', (err, data) =>{
 		form.multiples = true
 		form.uploadDir = path.join(__dirname, 'uploads')
 		form.parse(req, async (err, fields, files) => {
-			if(err) res.status(500).send(err.message)
+			if(err) return res.status(500).send(err.message)
 			let fileList = Array.isArray(files.files) ? files.files : [files.files]
 			for(let i in fileList){
 				let file = fileList[i]
@@ -41,8 +41,13 @@ fs.readFile(path.join(__dirname, 'password.txt'), 'utf-8', (err, data) =>{
 					}
 				}
 				else {
-					fs.remove(file.path)
-					res.status(500).send('No file chosen')
+					try {
+						await fs.remove(file.path)
+						res.status(500).send('No file chosen')
+					}
+					catch(err){
+						res.status(500).send(err.message)
+					}
 				}
 			}
 			res.end()
@@ -51,7 +56,7 @@ fs.readFile(path.join(__dirname, 'password.txt'), 'utf-8', (err, data) =>{
 
 	app.get('/files', auth, (req, res) => {
 		fs.readdir(path.join(__dirname, 'uploads'), (err,files) => {
-			if(err) res.status(500).send(err.message)
+			if(err) return res.status(500).send(err.message)
 			res.json(files)
 		})
 	})
@@ -59,19 +64,32 @@ fs.readFile(path.join(__dirname, 'password.txt'), 'utf-8', (err, data) =>{
 	app.get('/download/:file', auth, (req, res) => {
 		let file = path.join(__dirname, 'uploads', req.params.file)
 		fs.pathExists(file, (err, exists) => {
-			if(err) res.status(500).send(err.message)
+			if(err) return res.status(500).send(err.message)
 			if(exists) res.download(file)
 			else res.status(500).send('File does not exists')
+		})
+	})
+
+	app.delete('/delete/:file', auth, (req, res) => {
+		let file = path.join(__dirname, 'uploads', req.params.file)
+		fs.remove(file, err => {
+			if(err) return res.status(500).send(err.message)
+			res.end()
 		})
 	})
 
 	app.post('/auth', (req, res) => {
 		let form = new formidable.IncomingForm()
 		form.parse(req, async (err, fields, files) => {
-			if(err) res.status(500).send(err.message)
+			if(err) return res.status(500).send(err.message)
 			req.session.password = fields.password
 			res.redirect('/')
 		})
+	})
+
+	app.get('/logout', auth, (req, res) => {
+		delete req.session.password
+		res.redirect('/')
 	})
 
 	fs.ensureDir(path.join(__dirname, 'uploads'), err => {

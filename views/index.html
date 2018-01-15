@@ -6,13 +6,17 @@
 	<title>File upload</title>
 </head>
 <body>
+	<a href="/logout">Sair</a>
+	<br>
+	<br>
 	<form enctype="multipart/form-data" id="form">
-		<input type="file" name="files" multiple><button type="submit" id="btn">Upload</button>
+		<input type="file" name="files" multiple>
+		<button type="submit" id="btn">Upload</button>
 	</form>
 	<br>
 	<span id="status">---</span>
 	<h3>Files</h3>
-	<ul id="file-list"></ul>
+	<div id="file-list"></div>
 	<script src="js/axios.min.js"></script>
 	<script src="js/main.js"></script>
 </body>

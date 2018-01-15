@@ -1,7 +1,7 @@
 let form = document.getElementById('form')
 let status = document.getElementById('status')
-let btn = document.getElementById('btn')
 let fileList = document.getElementById('file-list')
+let btn = document.getElementById('btn')
 
 form.onsubmit = e => {
 	btn.disabled = true
@@ -13,23 +13,39 @@ form.onsubmit = e => {
 		}
 	})
 	.then(response => {
-		status.innerText = `Uploaded`
 		btn.disabled = false
+		status.innerText = `Uploaded`
 		reload()
 	})
 	.catch(err => {
-		status.innerText = `Error: ${err.response.data}`
 		btn.disabled = false
+		status.innerText = `Error: ${err.response.data}`
 	})
 	e.preventDefault()
 }
 
+function remove(e){
+	let file = e.target.dataset.file
+	e.target.disabled = true
+	status.innerText = `Deleting ...`
+	axios.delete(`/delete/${file}`)
+	.then(() => {
+		e.target.disabled = false
+		status.innerText = `Deleted`
+		reload()
+	})
+	.catch(err => {
+		e.target.disabled = false
+		status.innerText = `Error: ${err.response.data}`
+	})
+}
+
 function reload(){
-	fileList.innerHTML = ''
 	axios.get('/files')
 	.then(response => {
+		fileList.innerHTML = ''
 		response.data.forEach(item => {
-			fileList.innerHTML += `<li><a href="/download/${item}">${item}</a></li>`
+			fileList.innerHTML += `<p><button data-file="${item}" onclick="remove(event)">Delete</button>&emsp;<a href="/download/${item}">${item}</a></p>`
 		})
 	})
 	.catch(err => {
