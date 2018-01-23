@@ -1,15 +1,29 @@
+#!/usr/bin/env node
+
 let express = require('express')
 let formidable = require('formidable')
 let path = require('path')
 let fs = require('fs-extra')
 let ip = require('ip')
 let session = require('express-session')
+let os = require('os')
 let app = express()
-let password
 
-fs.readFile(path.join(__dirname, 'password.txt'), 'utf-8', (err, data) =>{
-	if(err) throw err
-	password = data.trim()
+//Directories and files
+let home = os.homedir()
+let dir = path.join(home, '.up-load')
+let uploads = path.join(dir, 'uploads')
+let passfile = path.join(dir, 'password.js')
+let views = path.join(__dirname, 'views')
+let assets = path.join(__dirname, 'static')
+
+async function main(){
+	await fs.ensureDir(uploads)
+	let exists = await fs.exists(passfile)
+	if(!exists){
+		await fs.writeFile(passfile, "module.exports = 'admin'")
+	}
+	let password = require(passfile)
 
 	app.use(session({
 		secret: password,
@@ -17,16 +31,16 @@ fs.readFile(path.join(__dirname, 'password.txt'), 'utf-8', (err, data) =>{
 		saveUninitialized: true
 	}))
 
-	app.use(express.static(path.join(__dirname, 'static')))
+	app.use(express.static(assets))
 
 	app.get('/', auth, (req, res) => {
-		res.sendFile(path.join(__dirname, 'views', 'index.html'))
+		res.sendFile(path.join(views, 'index.html'))
 	})
 
 	app.post('/upload', auth, (req, res) => {
 		let form = new formidable.IncomingForm()
 		form.multiples = true
-		form.uploadDir = path.join(__dirname, 'uploads')
+		form.uploadDir = uploads
 		form.parse(req, async (err, fields, files) => {
 			if(err) return res.status(500).send(err.message)
 			let fileList = Array.isArray(files.files) ? files.files : [files.files]
@@ -34,7 +48,7 @@ fs.readFile(path.join(__dirname, 'password.txt'), 'utf-8', (err, data) =>{
 				let file = fileList[i]
 				if(file.name){
 					try {
-						await fs.rename(file.path, path.join(__dirname, 'uploads', file.name))
+						await fs.rename(file.path, path.join(uploads, file.name))
 					}
 					catch(err){
 						res.status(500).send(err.message)
@@ -55,14 +69,14 @@ fs.readFile(path.join(__dirname, 'password.txt'), 'utf-8', (err, data) =>{
 	})
 
 	app.get('/files', auth, (req, res) => {
-		fs.readdir(path.join(__dirname, 'uploads'), (err,files) => {
+		fs.readdir(uploads, (err,files) => {
 			if(err) return res.status(500).send(err.message)
 			res.json(files)
 		})
 	})
 
 	app.get('/download/:file', auth, (req, res) => {
-		let file = path.join(__dirname, 'uploads', req.params.file)
+		let file = path.join(uploads, req.params.file)
 		fs.pathExists(file, (err, exists) => {
 			if(err) return res.status(500).send(err.message)
 			if(exists) res.download(file)
@@ -71,7 +85,7 @@ fs.readFile(path.join(__dirname, 'password.txt'), 'utf-8', (err, data) =>{
 	})
 
 	app.delete('/delete/:file', auth, (req, res) => {
-		let file = path.join(__dirname, 'uploads', req.params.file)
+		let file = path.join(uploads, req.params.file)
 		fs.remove(file, err => {
 			if(err) return res.status(500).send(err.message)
 			res.end()
@@ -92,20 +106,19 @@ fs.readFile(path.join(__dirname, 'password.txt'), 'utf-8', (err, data) =>{
 		res.redirect('/')
 	})
 
-	fs.ensureDir(path.join(__dirname, 'uploads'), err => {
-		if(err) throw err
-		app.listen(8080, () => {
-			console.log(`http://${ip.address()}:8080`)
-		})
+	app.listen(8080, () => {
+		console.log(`http://${ip.address()}:8080`)
 	})
-})
 
-function auth(req, res, next){
-	let pass = req.session.password
-	if(pass == password){
-		next()
-	}
-	else {
-		res.sendFile(path.join(__dirname, 'views', 'auth.html'))
+	function auth(req, res, next){
+		let pass = req.session.password
+		if(pass == password){
+			next()
+		}
+		else {
+			res.sendFile(path.join(views, 'auth.html'))
+		}
 	}
 }
+
+main()

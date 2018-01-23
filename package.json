@@ -1,7 +1,7 @@
 {
-	"name": "upload-ajax",
+	"name": "up-load",
 	"version": "1.0.0",
-	"description": "AJAX multiple file upload with progress",
+	"description": "File upload and download server",
 	"main": "index.js",
 	"dependencies": {
 		"express": "^4.16.2",
@@ -16,12 +16,15 @@
 	},
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/samuelnovaes/upload-ajax.git"
+		"url": "git+https://github.com/samuelnovaes/up-load.git"
 	},
 	"author": "Samuel Novaes <samuel.novaes.96@gmail.com>",
 	"license": "BSD-3-Clause",
 	"bugs": {
-		"url": "https://github.com/samuelnovaes/upload-ajax/issues"
+		"url": "https://github.com/samuelnovaes/up-load/issues"
 	},
-	"homepage": "https://github.com/samuelnovaes/upload-ajax#readme"
+	"homepage": "https://github.com/samuelnovaes/up-load#readme",
+	"bin": {
+		"up-load": "index.js"
+	}
 }
