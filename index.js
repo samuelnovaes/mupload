@@ -11,8 +11,8 @@ let app = express()
 
 //Directories and files
 let home = os.homedir()
-let dir = path.join(home, '.up-load')
-let uploads = path.join(dir, 'uploads')
+let dir = path.join(home, '.mupload')
+let uploads = path.join(dir, 'files')
 let passfile = path.join(dir, 'password.js')
 let views = path.join(__dirname, 'views')
 let assets = path.join(__dirname, 'static')

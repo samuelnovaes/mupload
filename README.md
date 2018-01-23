@@ -1,14 +1,14 @@
-# up-load
+# mupload
 File upload and download server
 
 # Install
 ```bash
-npm install -g up-load
+npm install -g mupload
 ```
 
 # Start the server
 ```bash
-up-load
+mupload
 ```
 
-You can change your password in the `~/.up-load/password.js` file
+You can change your password in the `~/.mupload/password.js` file

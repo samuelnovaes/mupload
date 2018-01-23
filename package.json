@@ -1,5 +1,5 @@
 {
-	"name": "up-load",
+	"name": "mupload",
 	"version": "1.0.0",
 	"description": "File upload and download server",
 	"main": "index.js",
@@ -16,15 +16,15 @@
 	},
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/samuelnovaes/up-load.git"
+		"url": "git+https://github.com/samuelnovaes/mupload.git"
 	},
 	"author": "Samuel Novaes <samuel.novaes.96@gmail.com>",
 	"license": "BSD-3-Clause",
 	"bugs": {
-		"url": "https://github.com/samuelnovaes/up-load/issues"
+		"url": "https://github.com/samuelnovaes/mupload/issues"
 	},
-	"homepage": "https://github.com/samuelnovaes/up-load#readme",
+	"homepage": "https://github.com/samuelnovaes/mupload#readme",
 	"bin": {
-		"up-load": "index.js"
+		"mupload": "index.js"
 	}
 }
