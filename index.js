@@ -26,8 +26,7 @@ let assets = path.join(__dirname, 'static')
 //Init
 
 fs.ensureDirSync(uploads)
-let exists = fs.pathExistsSync(passfile)
-if(!exists){
+if(!fs.pathExistsSync(passfile)){
 	fs.writeFileSync(passfile, md5('admin'))
 }
 let password = fs.readFileSync(passfile, 'utf-8')
