@@ -11,4 +11,4 @@ npm install -g mupload
 mupload
 ```
 
-You can change your password in the `~/.mupload/password.js` file
+> The default password is ```admin```

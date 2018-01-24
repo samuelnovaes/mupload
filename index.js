@@ -7,13 +7,14 @@ let fs = require('fs-extra')
 let ip = require('ip')
 let session = require('express-session')
 let os = require('os')
+let md5 = require('md5')
 let app = express()
 
 //Directories and files
 let home = os.homedir()
 let dir = path.join(home, '.mupload')
 let uploads = path.join(dir, 'files')
-let passfile = path.join(dir, 'password.js')
+let passfile = path.join(dir, 'password')
 let views = path.join(__dirname, 'views')
 let assets = path.join(__dirname, 'static')
 
@@ -21,9 +22,9 @@ async function main(){
 	await fs.ensureDir(uploads)
 	let exists = await fs.exists(passfile)
 	if(!exists){
-		await fs.writeFile(passfile, "module.exports = 'admin'")
+		await fs.writeFile(passfile, md5('admin'))
 	}
-	let password = require(passfile)
+	let password = await fs.readFile(passfile, 'utf-8')
 
 	app.use(session({
 		secret: password,
@@ -35,6 +36,41 @@ async function main(){
 
 	app.get('/', auth, (req, res) => {
 		res.sendFile(path.join(views, 'index.html'))
+	})
+
+	app.get('/password', auth, (req, res) => {
+		res.sendFile(path.join(views, 'password.html'))
+	})
+
+	app.post('/password', auth, (req, res) => {
+		let form = new formidable.IncomingForm()
+		form.parse(req, async (err, fields, files) => {
+			let {current, newpass, confirm} = fields
+			if(md5(current) != password){
+				res.status(422).send('Wrong current password')
+			}
+			else if(newpass.length < 5){
+				res.status(400).send('password must be at least 5 characters')
+			}
+			else if(newpass != confirm){
+				res.status(400).send('Passwords don\'t match')
+			}
+			else {
+				try {
+					await fs.writeFile(passfile, md5(newpass))
+				}
+				catch(err){
+					res.status(500).send(err.message)
+				}
+				try {
+					password = req.session.password = await fs.readFile(passfile, 'utf-8')
+				}
+				catch(err){
+					res.status(500).send(err.message)
+				}
+			}
+			res.end()
+		})
 	})
 
 	app.post('/upload', auth, (req, res) => {
@@ -57,7 +93,7 @@ async function main(){
 				else {
 					try {
 						await fs.remove(file.path)
-						res.status(500).send('No file chosen')
+						res.status(400).send('No file chosen')
 					}
 					catch(err){
 						res.status(500).send(err.message)
@@ -94,9 +130,9 @@ async function main(){
 
 	app.post('/auth', (req, res) => {
 		let form = new formidable.IncomingForm()
-		form.parse(req, async (err, fields, files) => {
+		form.parse(req, (err, fields, files) => {
 			if(err) return res.status(500).send(err.message)
-			req.session.password = fields.password
+			req.session.password = md5(fields.password)
 			res.redirect('/')
 		})
 	})
@@ -111,8 +147,7 @@ async function main(){
 	})
 
 	function auth(req, res, next){
-		let pass = req.session.password
-		if(pass == password){
+		if(req.session.password == password){
 			next()
 		}
 		else {
