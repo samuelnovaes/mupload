@@ -1,6 +1,6 @@
 {
 	"name": "mupload",
-	"version": "1.0.2",
+	"version": "1.0.3",
 	"description": "File upload and download server",
 	"main": "index.js",
 	"dependencies": {
