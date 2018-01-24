@@ -22,6 +22,7 @@ form.onsubmit = e => {
 			disabled = false
 			status.innerText = `Error: ${err.response.data}`
 		})
+		form.elements.files.value = null
 	}
 	e.preventDefault()
 }
