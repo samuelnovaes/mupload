@@ -30,7 +30,7 @@ Vue.use({
 			axios(options).then(({ data }) => {
 				if(cb) cb(data)
 			}).catch(err => {
-				this.$store.commit('error', err.message)
+				this.$store.commit('error', err.response.data)
 			}).finally(() => {
 				this.$store.commit('progress', 0)
 				this.$store.commit('buffering', false)
