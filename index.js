@@ -1,165 +1,151 @@
 #!/usr/bin/env node
 
-let express = require('express')
-let formidable = require('formidable')
-let path = require('path')
-let fs = require('fs-extra')
-let ip = require('ip')
-let session = require('express-session')
-let os = require('os')
-let md5 = require('md5')
-let helmet = require('helmet')
-let compression = require('compression')
-let serveStatic = require('serve-static')
+const express = require('express')
+const Bundler = require('parcel-bundler')
+const compression = require('compression')
+const path = require('path')
+const ip = require('ip')
+const fs = require('fs-extra')
+const os = require('os')
+const crypto = require('crypto')
+const jwt = require('jsonwebtoken')
+const multer = require('multer')
+const { promisify } = require('util')
+const prettyFileIcons = require('pretty-file-icons')
 
-let app = express()
+process.env.NODE_ENV = process.env.NODE_ENV || 'production'
 
-//Directories and files
+const app = express()
+const bundler = new Bundler(path.join(__dirname, 'www', 'index.html'))
+const root = path.join(os.homedir(), '.mupload')
+const filesDir = path.join(root, 'files')
+const passFile = path.join(root, 'password')
+const port = process.env.PORT || 8080
 
-let home = os.homedir()
-let dir = path.join(home, '.mupload')
-let uploads = path.join(dir, 'files')
-let passfile = path.join(dir, 'password')
-let views = path.join(__dirname, 'views')
-let assets = path.join(__dirname, 'static')
-
-//Init
-
-fs.ensureDirSync(uploads)
-if(!fs.pathExistsSync(passfile)){
-	fs.writeFileSync(passfile, md5('admin'))
-}
-let password = fs.readFileSync(passfile, 'utf-8')
-
-//APP
-
-app.use(helmet())
-
-app.use(session({
-	secret: password,
-	resave: false,
-	saveUninitialized: true
-}))
-
-app.use(serveStatic(assets))
-
-app.get('/', auth, (req, res) => {
-	res.sendFile(path.join(views, 'index.html'))
+const upload = multer({
+	storage: multer.memoryStorage()
 })
 
-app.get('/password', auth, (req, res) => {
-	res.sendFile(path.join(views, 'password.html'))
+app.use(compression())
+app.use(express.json())
+app.use(express.urlencoded({ extended: false }))
+
+app.post('/auth', async (req, res) => {
+	try {
+		const password = await fs.readFile(passFile, 'utf-8')
+		if (hash(req.body.password) == password) {
+			const token = await promisify(jwt.sign)({ exp: Math.floor(Date.now() / 1000) + (60 * 60 * 24) }, password)
+			res.send(token)
+		}
+		else res.sendStatus(401)
+	}
+	catch (err) {
+		res.status(500).send(err.message)
+	}
 })
 
-app.post('/password', auth, (req, res) => {
-	let form = new formidable.IncomingForm()
-	form.parse(req, async (err, fields, files) => {
-		let {current, newpass, confirm} = fields
-		if(md5(current) != password){
-			res.status(422).send('Wrong current password')
-		}
-		else if(newpass.length < 5){
-			res.status(400).send('password must be at least 5 characters')
-		}
-		else if(newpass != confirm){
-			res.status(400).send('Passwords don\'t match')
-		}
-		else {
-			try {
-				await fs.writeFile(passfile, md5(newpass))
-			}
-			catch(err){
-				res.status(500).send(err.message)
-			}
-			try {
-				password = req.session.password = await fs.readFile(passfile, 'utf-8')
-			}
-			catch(err){
-				res.status(500).send(err.message)
-			}
-		}
-		res.end()
-	})
-})
-
-app.post('/upload', auth, (req, res) => {
-	let form = new formidable.IncomingForm()
-	form.multiples = true
-	form.uploadDir = uploads
-	form.parse(req, async (err, fields, files) => {
-		if(err) return res.status(500).send(err.message)
-		let fileList = Array.isArray(files.files) ? files.files : [files.files]
-		for(let i in fileList){
-			let file = fileList[i]
-			if(file.name){
-				try {
-					await fs.rename(file.path, path.join(uploads, file.name))
-				}
-				catch(err){
-					res.status(500).send(err.message)
-				}
-			}
-			else {
-				try {
-					await fs.remove(file.path)
-					res.status(400).send('No file chosen')
-				}
-				catch(err){
-					res.status(500).send(err.message)
-				}
-			}
-		}
-		res.end()
-	})
-})
-
-app.get('/files', auth, (req, res) => {
-	fs.readdir(uploads, (err,files) => {
-		if(err) return res.status(500).send(err.message)
+app.get('/files', auth, async (req, res) => {
+	try {
+		const files = await fs.readdir(filesDir)
 		res.json(files)
-	})
+	}
+	catch (err) {
+		res.status(500).send(err.message)
+	}
 })
 
-app.get('/download/:file', auth, (req, res) => {
-	let file = path.join(uploads, req.params.file)
-	fs.pathExists(file, (err, exists) => {
-		if(err) return res.status(500).send(err.message)
-		if(exists) res.download(file)
+app.get('/files/:file', auth, async(req, res) => {
+	try {
+		const file = path.join(filesDir, req.params.file)
+		if(await fs.pathExists(file)) res.sendFile(file)
 		else res.status(500).send('File does not exists')
-	})
+	}
+	catch(err){
+		res.status(500).send(err.message)
+	}
 })
 
-app.delete('/delete/:file', auth, (req, res) => {
-	let file = path.join(uploads, req.params.file)
-	fs.remove(file, err => {
-		if(err) return res.status(500).send(err.message)
+app.get('/files/:file/icon', async (req, res) => {
+	try {
+		res.sendFile(require.resolve(`pretty-file-icons/svg/${prettyFileIcons.getIcon(req.params.file, 'svg')}`))
+	}
+	catch(err){
+		res.status(500).send(err.message)
+	}
+})
+
+app.delete('/files/:file', auth, async (req, res) => {
+	try {
+		const file = path.join(filesDir, req.params.file)
+		await fs.remove(file)
 		res.end()
-	})
-})
-
-app.post('/auth', (req, res) => {
-	let form = new formidable.IncomingForm()
-	form.parse(req, (err, fields, files) => {
-		if(err) return res.status(500).send(err.message)
-		req.session.password = md5(fields.password)
-		res.redirect('/')
-	})
-})
-
-app.get('/logout', auth, (req, res) => {
-	delete req.session.password
-	res.redirect('/')
-})
-
-app.listen(8080, () => {
-	console.log(`http://${ip.address()}:8080`)
-})
-
-function auth(req, res, next){
-	if(req.session.password == password){
-		next()
 	}
-	else {
-		res.sendFile(path.join(views, 'auth.html'))
+	catch (err) {
+		res.status(500).send(err.message)
 	}
+})
+
+app.post('/files', auth, upload.array('files'), async (req, res) => {
+	try {
+		for (const file of req.files) {
+			await fs.writeFile(path.join(filesDir, file.originalname), file.buffer)
+		}
+		res.end()
+	}
+	catch (err) {
+		res.status(500).send(err.message)
+	}
+})
+
+app.put('/password', auth, async (req, res) => {
+	try {
+		const password = await fs.readFile(passFile, 'utf-8')
+		if (hash(req.body.current) != password) res.status(500).send('Wrong current password')
+		else if (req.body.newpass.length < 5) res.status(500).send('Password must be at least 5 characters')
+		else {
+			await fs.writeFile(passFile, hash(req.body.newpass))
+			res.end()
+		}
+	}
+	catch (err) {
+		res.status(500).send(err.message)
+	}
+})
+
+app.use(bundler.middleware())
+
+listen()
+
+async function auth(req, res, next) {
+	try {
+		const token = req.get('x-access-token')
+		const password = await fs.readFile(passFile, 'utf-8')
+		try {
+			await jwt.verify(token, password)
+			next()
+		}
+		catch (err) {
+			res.sendStatus(401)
+		}
+	}
+	catch (err) {
+		res.status(500).send(err.message)
+	}
+}
+
+async function listen() {
+	try {
+		await fs.ensureDir(filesDir)
+		if (!await fs.pathExists(passFile)) await fs.writeFile(passFile, hash('admin'))
+		app.listen(8080, () => {
+			console.log(`http://${ip.address()}:${port}`)
+		})
+	}
+	catch (err) {
+		throw err
+	}
+}
+
+function hash(text) {
+	return crypto.createHash('sha512').update(text).digest('base64')
 }
