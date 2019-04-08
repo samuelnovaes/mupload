@@ -16,6 +16,8 @@ const prettyFileIcons = require('pretty-file-icons')
 process.env.NODE_ENV = process.env.NODE_ENV || 'production'
 
 const app = express()
+const http = require('http').Server(app)
+const io = require('socket.io')(http)
 const bundler = new Bundler(path.join(__dirname, 'www', 'index.html'))
 const root = path.join(os.homedir(), '.mupload')
 const filesDir = path.join(root, 'files')
@@ -78,6 +80,7 @@ app.delete('/files/:file', auth, async (req, res) => {
 	try {
 		const file = path.join(filesDir, req.params.file)
 		await fs.remove(file)
+		io.emit('refresh')
 		res.end()
 	}
 	catch (err) {
@@ -90,6 +93,7 @@ app.post('/files', auth, upload.array('files'), async (req, res) => {
 		for (const file of req.files) {
 			await fs.writeFile(path.join(filesDir, file.originalname), file.buffer)
 		}
+		io.emit('refresh')
 		res.end()
 	}
 	catch (err) {
@@ -138,7 +142,7 @@ async function listen() {
 	try {
 		await fs.ensureDir(filesDir)
 		if (!await fs.pathExists(passFile)) await fs.writeFile(passFile, hash('admin'))
-		app.listen(8080, () => {
+		http.listen(8080, () => {
 			console.log(`http://${ip.address()}:${port}`)
 		})
 	}

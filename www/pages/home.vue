@@ -24,14 +24,14 @@
 			</v-menu>
 		</v-toolbar>
 		<v-content>
-			<v-container grid-list-xl>
+			<v-container grid-list-md fluid>
 				<v-layout row wrap>
-					<v-flex v-for="(file, i) in files" :key="i" xs12 sm6 md4 lg3 xl2>
+					<v-flex v-for="(file, i) in files" :key="i" xs12 sm6 md4 lg3>
 						<v-card>
-							<v-container>
-								<v-img :src="`/files/${file}/icon`" :aspect-ratio="16/9" contain></v-img>
-							</v-container>
-							<v-toolbar flat color="primary2">
+							<v-toolbar flat>
+								<v-avatar tile size="30">
+									<v-img :src="`/files/${file}/icon`" :aspect-ratio="1" contain></v-img>
+								</v-avatar>
 								<v-toolbar-title>{{file}}</v-toolbar-title>
 								<v-spacer></v-spacer>
 								<v-menu>
@@ -100,7 +100,9 @@ input[type="file"] {
 
 
 <script>
-import mime from 'mime'
+import io from 'socket.io-client'
+const socket = io()
+
 export default {
 	data() {
 		const getPassword = () => this.newPassword
@@ -120,6 +122,11 @@ export default {
 	created() {
 		if (!this.$store.state.token) this.$router.push('/login')
 		else this.refresh()
+	},
+	mounted() {
+		socket.on('refresh', () => {
+			this.refresh()
+		})
 	},
 	methods: {
 		logout() {
@@ -163,8 +170,6 @@ export default {
 				onUploadProgress: e => {
 					this.$store.commit('progress', parseInt(((e.loaded / e.total) * 100)))
 				}
-			}, () => {
-				this.refresh()
 			})
 		},
 		downloadFile(file) {
@@ -188,8 +193,6 @@ export default {
 			this.$request({
 				method: 'DELETE',
 				url: `/files/${file}`
-			}, () => {
-				this.refresh()
 			})
 		}
 	}
