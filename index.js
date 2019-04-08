@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 
 const express = require('express')
-const Bundler = require('parcel-bundler')
 const compression = require('compression')
 const path = require('path')
 const ip = require('ip')
@@ -18,7 +17,6 @@ process.env.NODE_ENV = process.env.NODE_ENV || 'production'
 const app = express()
 const http = require('http').Server(app)
 const io = require('socket.io')(http)
-const bundler = new Bundler(path.join(__dirname, 'www', 'index.html'))
 const root = path.join(os.homedir(), '.mupload')
 const filesDir = path.join(root, 'files')
 const passFile = path.join(root, 'password')
@@ -116,7 +114,11 @@ app.put('/password', auth, async (req, res) => {
 	}
 })
 
-if (process.env.NODE_ENV == 'development') app.use(bundler.middleware())
+if (process.env.NODE_ENV == 'development') {
+	const Bundler = require('parcel-bundler')
+	const bundler = new Bundler(path.join(__dirname, 'www', 'index.html'))
+	app.use(bundler.middleware())
+}
 else app.use(express.static(path.join(__dirname, 'dist')))
 
 listen()

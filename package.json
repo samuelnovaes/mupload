@@ -1,6 +1,6 @@
 {
 	"name": "mupload",
-	"version": "2.0.2",
+	"version": "2.0.3",
 	"description": "File upload and download server",
 	"main": "index.js",
 	"scripts": {
@@ -34,7 +34,8 @@
 		"ip": "^1.1.5",
 		"jsonwebtoken": "^8.5.1",
 		"multer": "^1.4.1",
-		"socket.io": "^2.2.0"
+		"socket.io": "^2.2.0",
+		"pretty-file-icons": "^2.2.1"
 	},
 	"devDependencies": {
 		"@mdi/font": "^3.5.95",
@@ -42,7 +43,6 @@
 		"material-design-icons-iconfont": "^4.0.5",
 		"@vue/component-compiler-utils": "^2.6.0",
 		"parcel-bundler": "^1.12.3",
-		"pretty-file-icons": "^2.2.1",
 		"cross-env": "^5.2.0",
 		"nodemon": "^1.18.10",
 		"socket.io-client": "^2.2.0",
