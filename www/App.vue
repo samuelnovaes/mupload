@@ -11,9 +11,9 @@
 				</v-card-text>
 			</v-card>
 		</v-dialog>
-		<v-snackbar v-model="$store.state.error" color="error">
+		<v-snackbar v-model="$store.state.error" color="error" class="black--text">
 			{{$store.state.errorMessage}}
-			<v-btn icon @click="$store.commit('error', false)">
+			<v-btn icon @click="$store.commit('error', false)" class="black--text">
 				<v-icon>mdi-close</v-icon>
 			</v-btn>
 		</v-snackbar>
