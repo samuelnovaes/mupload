@@ -5,7 +5,8 @@
 	"main": "index.js",
 	"scripts": {
 		"dev": "cross-env NODE_ENV=development nodemon index.js",
-		"start": "node index.js"
+		"start": "node index.js",
+		"build": "parcel build www/index.html"
 	},
 	"repository": {
 		"type": "git",

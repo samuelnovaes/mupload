@@ -112,7 +112,8 @@ app.put('/password', auth, async (req, res) => {
 	}
 })
 
-app.use(bundler.middleware())
+if (process.env.NODE_ENV == 'development') app.use(bundler.middleware())
+else app.use(express.static(path.join(__dirname, 'dist')))
 
 listen()
 

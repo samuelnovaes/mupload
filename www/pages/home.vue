@@ -25,7 +25,7 @@
 		</v-toolbar>
 		<v-content>
 			<v-container grid-list-xl>
-				<v-layout row wrap v-if="files.length">
+				<v-layout row wrap>
 					<v-flex v-for="(file, i) in files" :key="i" xs12 sm6 md4 lg3 xl2>
 						<v-card>
 							<v-container>
@@ -54,7 +54,6 @@
 						</v-card>
 					</v-flex>
 				</v-layout>
-				<v-alert v-else :value="true" type="warning">No files</v-alert>
 			</v-container>
 		</v-content>
 		<v-dialog v-model="changePasswordDialog" width="100%" max-width="300" persistent>

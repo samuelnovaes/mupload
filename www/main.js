@@ -44,8 +44,7 @@ new Vue({
 	el: '#app',
 	render: h => h(App),
 	router: new VueRouter({
-		routes,
-		mode: 'history'
+		routes
 	}),
 	store: new Vuex.Store(store)
 })
